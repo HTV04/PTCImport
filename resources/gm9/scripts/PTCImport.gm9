@@ -1,0 +1,108 @@
+# PTCImport v1.0
+# last changed: 20200811
+# author: HTV04
+
+set PREVIEW_MODE "PTCImport v1.0\n \nBy HTV04"
+
+if not ask "Press <A> to continue, or <B> to exit."
+ goto end
+end
+
+allow -a 2:/
+
+# Initialize some stuff.
+@start
+set PTCIDIR "0:/PTCImport"
+set PTCTITLE "2:/title/00030004/4b4e4145"
+
+# Check if Petit Computer is installed.
+@check_PTC_title
+if not find $[PTCTITLE] NULL
+ echo "Cannot find Petit Computer.\n \nPlease make sure Petit Computer is installed."
+ goto end
+end
+
+# Make a backup of Petit Computer's save file (where files are stored).
+@backup
+if not find $[PTCIDIR]/public.sav NULL
+ echo "Petit Computer save backup not found.\n \nNow backing up..."
+ if find $[PTCTITLE]/data/public.sav NULL
+  cp $[PTCTITLE]/data/public.sav $[PTCIDIR]/public.sav
+  echo "Backup successful!"
+ else
+  echo "Petit Computer save file not found.\n \nPlease run Petit Computer in order to create a save file."
+  goto end
+ end
+end
+
+# Check if all the directories in PTC's save file are there, and create them if they aren't.
+@check_dirs
+imgmount $[PTCTITLE]/data/public.sav
+if not find 7:/CHR NULL
+ mkdir 7:/CHR
+end
+if not find 7:/COL NULL
+ mkdir 7:/COL
+end
+if not find 7:/MEM NULL
+ mkdir 7:/MEM
+end
+if not find 7:/GRP NULL
+ mkdir 7:/GRP
+end
+if not find 7:/PRG NULL
+ mkdir 7:/PRG
+end
+if not find 7:/SCR NULL
+ mkdir 7:/SCR
+end
+
+# Select the PTC file to import, and verify it before continuing.
+@select_file
+filesel "Please select a PTC file." $[PTCIDIR]/PTC/*.PTC SELPTC
+fget $[SELPTC]@24:4 PTCCHK
+if not chk $[PTCCHK] "50455443"
+ echo "File is not a valid PTC file."
+ goto select_file
+end
+fget $[SELPTC]@2D:3 PTCTYPE
+if chk $[PTCTYPE] "434852"
+ set PTCTYPE "CHR"
+elif chk $[PTCTYPE] "434F4C"
+ set PTCTYPE "COL"
+elif chk $[PTCTYPE] "4D454D"
+ set PTCTYPE "MEM"
+elif chk $[PTCTYPE] "475250"
+ set PTCTYPE "GRP"
+elif chk $[PTCTYPE] "505247"
+ set PTCTYPE "PRG"
+elif chk $[PTCTYPE] "534352"
+ set PTCTYPE "SCR"
+else
+ echo "PTC file is not a valid file type."
+ goto select_file
+end
+
+# Strip the file extension and header of the PTC file, and import it.
+@import_file
+strsplit PTCFILE $[SELPTC] "/"
+strsplit -b PTCFILE $[PTCFILE] "."
+inject $[SELPTC]@24 $[PTCIDIR]/PTC/$[PTCFILE]
+mv $[PTCIDIR]/PTC/$[PTCFILE] 7:/$[PTCTYPE]/$[PTCFILE]
+
+# The original PTC file probably isn't needed anymore, so ask the user if they want to delete it.
+@delete_PTC
+if ask "PTC file imported!\n \nWould you like to delete the original PTC file?"
+ rm $[SELPTC]
+end
+
+# We're done! But are there any more files to transfer?
+@done
+if ask "Transfer another file?"
+ goto select_file
+else
+ imgumount
+end
+
+@end
+qr "Here's a QR code you should scan!\n \nCheck out PTCImport's GitHub repo!\n \nIf you're running into a problem with this script,\ncreate an issue." https://github.com/HTV04/PTCImport
