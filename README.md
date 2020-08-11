@@ -1,6 +1,4 @@
-# PTCImport
-Current version: v1.0
-
+# PTCImport v1.0
 Begone, QR codes!
 
 PTCImport is a GodMode9 script that imports PTC files directly into Petit Computer.
