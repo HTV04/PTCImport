@@ -4,7 +4,7 @@ Begone, QR codes!
 PTCImport is a GodMode9 script that imports PTC files directly into Petit Computer.
 
 ## Usage
-* Make sure the latest version of [GodMode9](https://github.com/d0k3/GodMode9) is installed.
+* Make sure [the latest version of GodMode9](https://github.com/d0k3/GodMode9/releases/latest) is installed.
 * Extract PTCImport.zip to the root of your SD card.
 * Put any PTC files you want to import into the PTC folder in the PTCImport folder.
 * Open GodMode9, and when on the root menu (with the list of mounted drives), press the HOME button.
